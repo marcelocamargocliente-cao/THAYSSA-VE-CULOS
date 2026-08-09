@@ -24,13 +24,17 @@ export default function GalleryLightbox() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Rotação automática a cada 5 segundos
+  // Rotação automática a cada 8 segundos com fade suave
   useEffect(() => {
     if (allItems.length <= ITEMS_PER_PAGE) return;
     const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
     intervalRef.current = setInterval(() => {
-      setPage(p => (p + 1) % totalPages);
-    }, 5000);
+      setFading(true);
+      setTimeout(() => {
+        setPage(p => (p + 1) % totalPages);
+        setFading(false);
+      }, 400);
+    }, 8000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [allItems]);
 
@@ -54,11 +58,23 @@ export default function GalleryLightbox() {
   const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
   const visibleItems = allItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
+  const [fading, setFading] = useState(false);
+
   const goToPage = (p: number) => {
-    setPage(p);
+    setFading(true);
+    setTimeout(() => {
+      setPage(p);
+      setFading(false);
+    }, 400);
     if (intervalRef.current) clearInterval(intervalRef.current);
     const totalP = Math.ceil(allItems.length / ITEMS_PER_PAGE);
-    intervalRef.current = setInterval(() => setPage(prev => (prev + 1) % totalP), 5000);
+    intervalRef.current = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setPage(prev => (prev + 1) % totalP);
+        setFading(false);
+      }, 400);
+    }, 8000);
   };
 
   return (
@@ -78,8 +94,11 @@ export default function GalleryLightbox() {
           )}
         </div>
 
-        {/* Grid 3x2 com transição */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+        {/* Grid 3x2 com transição fade */}
+        <div
+          className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8"
+          style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease-in-out' }}
+        >
           {visibleItems.map((item, idx) => {
             const globalIdx = page * ITEMS_PER_PAGE + idx;
             return (
