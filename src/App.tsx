@@ -20,6 +20,7 @@ import Contact from "./components/Contact";
 import FinalCTA from "./components/FinalCTA";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
+import AdminPanel from "./components/AdminPanel";
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
 
       <Footer />
       <WhatsAppButton />
+      <AdminPanel />
     </div>
   );
 }

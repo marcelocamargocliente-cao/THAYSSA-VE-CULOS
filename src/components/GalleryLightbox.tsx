@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react";
+import { supabase, GaleriaDB } from "../lib/supabase";
 
-const galleryItems = [
-  { id: 1, title: "Showroom Thayssa Veículos", tag: "Carros Seminovos" },
-  { id: 2, title: "Motos e Scooter Selecionadas", tag: "Duas Rodas" },
-  { id: 3, title: "Atendimento Personalizado em Cosmos", tag: "Equipe" },
-  { id: 4, title: "Pátio com Veículos Revisados", tag: "Estoque" },
-  { id: 5, title: "Entrega de Veículos com Garantia", tag: "Clientes" },
-  { id: 6, title: "Seleção de Veículos Premium", tag: "Destaque" },
-];
+const FALLBACK_ITEMS = [
+  { id: "1", titulo: "Showroom Thayssa Veículos", foto_url: "", ordem: 1, ativo: true },
+  { id: "2", titulo: "Motos e Scooter Selecionadas", foto_url: "", ordem: 2, ativo: true },
+  { id: "3", titulo: "Atendimento Personalizado em Cosmos", foto_url: "", ordem: 3, ativo: true },
+  { id: "4", titulo: "Pátio com Veículos Revisados", foto_url: "", ordem: 4, ativo: true },
+  { id: "5", titulo: "Entrega de Veículos com Garantia", foto_url: "", ordem: 5, ativo: true },
+  { id: "6", titulo: "Seleção de Veículos Premium", foto_url: "", ordem: 6, ativo: true },
+] as GaleriaDB[];
 
 export default function GalleryLightbox() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GaleriaDB[]>(FALLBACK_ITEMS);
+
+  useEffect(() => {
+    const fetchGaleria = async () => {
+      const { data } = await supabase.from("galeria").select("*").eq("ativo", true).order("ordem");
+      if (data && data.length > 0) setGalleryItems(data);
+    };
+    fetchGaleria();
+    const channel = supabase.channel("galeria-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "galeria" }, fetchGaleria)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
