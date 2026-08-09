@@ -14,7 +14,7 @@ export default function Stock() {
   const [vehicles, setVehicles] = useState<VehicleDB[]>(FALLBACK_VEHICLES);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleCards, setVisibleCards] = useState(3);
+  const [visibleCards, setVisibleCards] = useState(2);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -54,7 +54,7 @@ export default function Stock() {
     const handleResize = () => {
       if (window.innerWidth < 640) setVisibleCards(1);
       else if (window.innerWidth < 1024) setVisibleCards(2);
-      else setVisibleCards(3);
+      else setVisibleCards(2);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -155,9 +155,9 @@ export default function Stock() {
                   <div key={i} className="flex-shrink-0 px-3" style={{ width: `${100 / visibleCards}%` }}>
                     <div className="bg-white border border-[#E5E0D8] rounded-[8px] p-5 flex flex-col justify-between h-full group hover:-translate-y-1 hover:border-[#C41E1E] transition-all duration-300">
                       <div>
-                        <div className="bg-[#F0EDE8] aspect-[16/10] rounded-[6px] mb-5 relative flex items-center justify-center overflow-hidden">
+                        <div className="bg-[#F0EDE8] aspect-[3/4] rounded-[6px] mb-5 relative flex items-center justify-center overflow-hidden">
                           {v.foto_url ? (
-                            <img src={v.foto_url} alt={v.nome} className="w-full h-full object-contain p-2"/>
+                            <img src={v.foto_url} alt={v.nome} className="w-full h-full object-cover"/>
                           ) : isMoto(v) ? (
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9C0B4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                               <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
