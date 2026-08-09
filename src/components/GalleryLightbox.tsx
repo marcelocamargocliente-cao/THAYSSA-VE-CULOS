@@ -1,62 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase, GaleriaDB } from "../lib/supabase";
 
-const FALLBACK_ITEMS = [
-  { id: "1", titulo: "Showroom Thayssa Veículos", foto_url: "", ordem: 1, ativo: true },
-  { id: "2", titulo: "Motos e Scooter Selecionadas", foto_url: "", ordem: 2, ativo: true },
-  { id: "3", titulo: "Atendimento Personalizado em Cosmos", foto_url: "", ordem: 3, ativo: true },
-  { id: "4", titulo: "Pátio com Veículos Revisados", foto_url: "", ordem: 4, ativo: true },
-  { id: "5", titulo: "Entrega de Veículos com Garantia", foto_url: "", ordem: 5, ativo: true },
-  { id: "6", titulo: "Seleção de Veículos Premium", foto_url: "", ordem: 6, ativo: true },
-] as GaleriaDB[];
-
 export default function GalleryLightbox() {
+  const [allItems, setAllItems] = useState<GaleriaDB[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [galleryItems, setGalleryItems] = useState<GaleriaDB[]>(FALLBACK_ITEMS);
+  const [page, setPage] = useState(0);
+  const ITEMS_PER_PAGE = 6;
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetchGaleria = async () => {
-      const { data } = await supabase.from("galeria").select("*").eq("ativo", true).order("ordem");
-      if (data && data.length > 0) setGalleryItems(data);
+      const { data } = await supabase
+        .from("galeria")
+        .select("*")
+        .eq("ativo", true)
+        .order("ordem");
+      if (data && data.length > 0) setAllItems(data);
     };
     fetchGaleria();
-    const channel = supabase.channel("galeria-changes")
+    const channel = supabase.channel("galeria-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "galeria" }, fetchGaleria)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // Rotação automática a cada 5 segundos
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedIndex === null) return;
-      if (e.key === "Escape") {
-        closeLightbox();
-      } else if (e.key === "ArrowLeft") {
-        setSelectedIndex((prev) =>
-          prev !== null ? (prev === 0 ? galleryItems.length - 1 : prev - 1) : null
-        );
-      } else if (e.key === "ArrowRight") {
-        setSelectedIndex((prev) =>
-          prev !== null ? (prev === galleryItems.length - 1 ? 0 : prev + 1) : null
-        );
-      }
-    };
+    if (allItems.length <= ITEMS_PER_PAGE) return;
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+    intervalRef.current = setInterval(() => {
+      setPage(p => (p + 1) % totalPages);
+    }, 5000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [allItems]);
 
+  // Teclado para lightbox
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+      if (e.key === "Escape") setSelectedIndex(null);
+      else if (e.key === "ArrowLeft") setSelectedIndex(p => p !== null ? (p === 0 ? allItems.length - 1 : p - 1) : null);
+      else if (e.key === "ArrowRight") setSelectedIndex(p => p !== null ? (p === allItems.length - 1 ? 0 : p + 1) : null);
+    };
     if (selectedIndex !== null) {
       document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keydown", handleKey);
     } else {
       document.body.style.overflow = "";
     }
+    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", handleKey); };
+  }, [selectedIndex, allItems]);
 
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedIndex]);
+  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+  const visibleItems = allItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
-  const closeLightbox = () => {
-    setSelectedIndex(null);
+  const goToPage = (p: number) => {
+    setPage(p);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    const totalP = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+    intervalRef.current = setInterval(() => setPage(prev => (prev + 1) % totalP), 5000);
   };
 
   return (
@@ -64,175 +66,99 @@ export default function GalleryLightbox() {
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="mb-12">
           <span className="text-[#8B7355] text-[11px] font-medium tracking-[0.2em] font-['DM_Sans'] uppercase mb-2 block">
-            CONHEÇA NOSSO ESPAÇO
+            CLIENTES SATISFEITOS
           </span>
           <h2 className="text-4xl md:text-6xl font-light text-[#1A1A1A] font-['Cormorant_Garamond']">
             Nossa <span className="italic font-bold text-[#C41E1E]">galeria.</span>
           </h2>
+          {allItems.length > ITEMS_PER_PAGE && (
+            <p className="font-['DM_Sans'] text-[13px] text-[#9B8E7E] mt-2">
+              {allItems.length} fotos · atualizando automaticamente
+            </p>
+          )}
         </div>
 
-        {/* Grid 3x2 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {galleryItems.map((item, idx) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedIndex(idx)}
-              className="relative aspect-[4/3] bg-[#E5E0D8] rounded-[8px] overflow-hidden cursor-pointer group flex items-center justify-center"
-            >
-              {/* Camera Icon */}
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#C9C0B4"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                <circle cx="12" cy="13" r="3" />
-              </svg>
-
-              {/* Tag overlay bottom-left */}
-              <div className="absolute bottom-3 left-3 bg-[#1A1A1A]/80 text-white text-[10px] font-medium font-['DM_Sans'] px-2.5 py-1 rounded-[4px] uppercase tracking-wider">
-                {item.tag}
-              </div>
-
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-[#1A1A1A]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    <line x1="11" y1="8" x2="11" y2="14" />
-                    <line x1="8" y1="11" x2="14" y2="11" />
-                  </svg>
+        {/* Grid 3x2 com transição */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+          {visibleItems.map((item, idx) => {
+            const globalIdx = page * ITEMS_PER_PAGE + idx;
+            return (
+              <div key={item.id}
+                onClick={() => setSelectedIndex(globalIdx)}
+                className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-[#E5E0D8]">
+                {item.foto_url ? (
+                  <img
+                    src={item.foto_url}
+                    alt={item.titulo || "Galeria Thayssa Veículos"}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[#C9C0B4] text-4xl">📷</div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white font-['DM_Sans'] text-sm font-medium">
+                    🔍 Ver
+                  </span>
                 </div>
               </div>
-            </div>
+            );
+          })}
+          {/* Preencher espaços vazios se última página tiver menos de 6 */}
+          {Array.from({ length: ITEMS_PER_PAGE - visibleItems.length }).map((_, i) => (
+            <div key={`empty-${i}`} className="aspect-square rounded-lg bg-[#E5E0D8]/40" />
           ))}
         </div>
+
+        {/* Dots de navegação */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mb-4">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button key={i} onClick={() => goToPage(i)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  page === i ? "w-[18px] h-[6px] bg-[#C41E1E]" : "w-[6px] h-[6px] bg-[#E5E0D8] hover:bg-[#C9C0B4]"
+                }`}
+                aria-label={`Página ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <p className="font-['DM_Sans'] text-[12px] text-[#9B8E7E] text-center">
+          Siga <a href="https://www.instagram.com/thayssaveiculosbco/" target="_blank" rel="noopener noreferrer"
+            className="text-[#C41E1E] hover:underline">@thayssaveiculosbco</a> no Instagram para mais fotos
+        </p>
       </div>
 
-      {/* Lightbox Modal */}
-      {selectedIndex !== null && (
-        <div
-          onClick={closeLightbox}
-          className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-4 animate-fade-in"
-        >
-          {/* Close Button X */}
-          <button
-            onClick={closeLightbox}
-            aria-label="Fechar galeria"
-            className="absolute top-5 right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-
-          {/* Prev Arrow */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedIndex((prev) =>
-                prev !== null ? (prev === 0 ? galleryItems.length - 1 : prev - 1) : null
-              );
-            }}
-            aria-label="Foto anterior"
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-
-          {/* Next Arrow */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedIndex((prev) =>
-                prev !== null ? (prev === galleryItems.length - 1 ? 0 : prev + 1) : null
-              );
-            }}
-            aria-label="Próxima foto"
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-
-          {/* Content Container */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-[90vw] max-h-[80vh] flex flex-col items-center justify-center"
-          >
-            <div className="w-[80vw] max-w-[800px] aspect-[16/10] bg-[#222222] border border-[#333333] rounded-[8px] flex flex-col items-center justify-center p-8 relative">
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#555555"
-                strokeWidth="1"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mb-4"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <circle cx="9" cy="9" r="2" />
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-              </svg>
-              <p className="text-white font-['Cormorant_Garamond'] text-2xl font-semibold text-center mb-1">
-                {galleryItems[selectedIndex].title}
+      {/* LIGHTBOX */}
+      {selectedIndex !== null && allItems[selectedIndex] && (
+        <div className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center"
+          onClick={() => setSelectedIndex(null)}>
+          <div className="relative max-w-3xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <img
+              src={allItems[selectedIndex].foto_url}
+              alt={allItems[selectedIndex].titulo || ""}
+              className="w-full rounded-lg object-contain max-h-[80vh]"
+            />
+            {allItems[selectedIndex].titulo && (
+              <p className="text-white/70 font-['DM_Sans'] text-sm text-center mt-3">
+                {allItems[selectedIndex].titulo}
               </p>
-              <span className="text-[#C41E1E] text-xs uppercase font-['DM_Sans'] tracking-widest">
-                {galleryItems[selectedIndex].tag}
-              </span>
-            </div>
-
-            <p className="font-['DM_Sans'] font-light text-[13px] text-white/60 mt-4 text-center">
-              Nosso estoque — @thayssaveiculosbco
-            </p>
+            )}
+          </div>
+          <button onClick={() => setSelectedIndex(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition-all">
+            ✕
+          </button>
+          <button onClick={() => setSelectedIndex(p => p !== null ? (p === 0 ? allItems.length - 1 : p - 1) : null)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition-all">
+            ‹
+          </button>
+          <button onClick={() => setSelectedIndex(p => p !== null ? (p === allItems.length - 1 ? 0 : p + 1) : null)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer transition-all">
+            ›
+          </button>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 font-['DM_Sans'] text-xs">
+            {selectedIndex + 1} / {allItems.length}
           </div>
         </div>
       )}
