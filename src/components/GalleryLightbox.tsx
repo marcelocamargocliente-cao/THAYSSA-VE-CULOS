@@ -1,16 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase, GaleriaDB } from "../lib/supabase";
 
 const ITEMS_PER_PAGE = 6;
 const INTERVAL_MS = 8000;
 
-// Pré-carrega um array de URLs de imagens e resolve quando todas estiverem prontas
 function preloadImages(urls: string[]): Promise<void> {
   return Promise.all(
     urls.map(url => new Promise<void>(resolve => {
       const img = new Image();
       img.onload = () => resolve();
-      img.onerror = () => resolve(); // resolve mesmo se falhar — não bloqueia
+      img.onerror = () => resolve();
       img.src = url;
     }))
   ).then(() => undefined);
@@ -19,10 +18,15 @@ function preloadImages(urls: string[]): Promise<void> {
 export default function GalleryLightbox() {
   const [allItems, setAllItems] = useState<GaleriaDB[]>([]);
   const [page, setPage] = useState(0);
-  const [visible, setVisible] = useState(true); // controla opacity
+  const [visible, setVisible] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const pageRef = useRef(0);
+  const allItemsRef = useRef<GaleriaDB[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transitioning = useRef(false);
+
+  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => { allItemsRef.current = allItems; }, [allItems]);
 
   useEffect(() => {
     const fetchGaleria = async () => {
@@ -37,60 +41,58 @@ export default function GalleryLightbox() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
-
-  // Navega para uma página: pré-carrega → fade out → troca → fade in
-  const goToPage = useCallback(async (nextPage: number) => {
-    if (transitioning.current || allItems.length === 0) return;
+  const doTransition = async (nextPage: number) => {
+    if (transitioning.current) return;
+    const items = allItemsRef.current;
+    if (items.length === 0) return;
     transitioning.current = true;
 
-    // URLs da próxima página
-    const start = nextPage * ITEMS_PER_PAGE;
-    const nextUrls = allItems
-      .slice(start, start + ITEMS_PER_PAGE)
-      .map(i => i.foto_url)
-      .filter(Boolean) as string[];
+    const total = Math.ceil(items.length / ITEMS_PER_PAGE);
+    const safePage = ((nextPage % total) + total) % total;
 
-    // Pré-carregar antes de qualquer animação
-    await preloadImages(nextUrls);
+    // Pré-carregar próxima página
+    const start = safePage * ITEMS_PER_PAGE;
+    const urls = items.slice(start, start + ITEMS_PER_PAGE).map(i => i.foto_url).filter(Boolean) as string[];
+    await preloadImages(urls);
 
-    // Fade out (200ms)
+    // Fade out
     setVisible(false);
     await new Promise(r => setTimeout(r, 220));
 
-    // Trocar página
-    setPage(nextPage);
+    // Trocar
+    setPage(safePage);
+    pageRef.current = safePage;
 
-    // Fade in (200ms)
+    // Fade in
     setVisible(true);
     await new Promise(r => setTimeout(r, 220));
 
     transitioning.current = false;
-  }, [allItems]);
+  };
 
-  // Auto-avanço
-  const scheduleNext = useCallback(() => {
+  // Timer simples usando ref — não depende de closures
+  const startTimer = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
-      const next = (page + 1) % (Math.ceil(allItems.length / ITEMS_PER_PAGE) || 1);
-      await goToPage(next);
-      scheduleNext();
+      const items = allItemsRef.current;
+      if (items.length <= ITEMS_PER_PAGE) return;
+      const total = Math.ceil(items.length / ITEMS_PER_PAGE);
+      const next = (pageRef.current + 1) % total;
+      await doTransition(next);
+      startTimer(); // reagendar após transição
     }, INTERVAL_MS);
-  }, [page, allItems, goToPage]);
+  };
 
+  // Iniciar timer quando items carregam
   useEffect(() => {
-    if (allItems.length > ITEMS_PER_PAGE) scheduleNext();
+    if (allItems.length > ITEMS_PER_PAGE) {
+      startTimer();
+      // Pré-carregar página 1 em background
+      const urls = allItems.slice(ITEMS_PER_PAGE, ITEMS_PER_PAGE * 2).map(i => i.foto_url).filter(Boolean) as string[];
+      preloadImages(urls);
+    }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [allItems, page]);
-
-  // Pré-carrega a próxima página em background enquanto exibe a atual
-  useEffect(() => {
-    if (allItems.length <= ITEMS_PER_PAGE) return;
-    const nextPage = (page + 1) % totalPages;
-    const start = nextPage * ITEMS_PER_PAGE;
-    const urls = allItems.slice(start, start + ITEMS_PER_PAGE).map(i => i.foto_url).filter(Boolean) as string[];
-    preloadImages(urls);
-  }, [page, allItems]);
+  }, [allItems]);
 
   // Teclado lightbox
   useEffect(() => {
@@ -108,10 +110,11 @@ export default function GalleryLightbox() {
 
   const handleDotClick = async (i: number) => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    await goToPage(i);
-    scheduleNext();
+    await doTransition(i);
+    startTimer();
   };
 
+  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
   const visibleItems = allItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
   return (
