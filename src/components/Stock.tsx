@@ -155,9 +155,9 @@ export default function Stock() {
                   <div key={i} className="flex-shrink-0 px-3" style={{ width: `${100 / visibleCards}%` }}>
                     <div className="bg-white border border-[#E5E0D8] rounded-[8px] p-5 flex flex-col justify-between h-full group hover:-translate-y-1 hover:border-[#C41E1E] transition-all duration-300">
                       <div>
-                        <div className="bg-[#F0EDE8] aspect-[4/3] rounded-[6px] mb-5 relative flex items-center justify-center overflow-hidden">
+                        <div className="bg-[#E8E4DF] aspect-[4/3] rounded-[6px] mb-5 relative flex items-center justify-center overflow-hidden">
                           {v.foto_url ? (
-                            <img src={v.foto_url} alt={v.nome} className="w-full h-full object-cover"/>
+                            <img src={v.foto_url} alt={v.nome} className="w-full h-full object-contain"/>
                           ) : isMoto(v) ? (
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9C0B4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                               <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
