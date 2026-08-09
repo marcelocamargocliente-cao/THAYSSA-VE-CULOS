@@ -1,0 +1,8 @@
+{
+  "name": "Thayssa Veículos BCO\u0026CIA",
+  "description": "Landing page premium para agência de carros e motos seminovos em Cosmos, Rio de Janeiro. Compra, venda, troca e financiamento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
