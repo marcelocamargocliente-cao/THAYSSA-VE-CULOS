@@ -1,44 +1,98 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase, GaleriaDB } from "../lib/supabase";
+
+const ITEMS_PER_PAGE = 6;
+const INTERVAL_MS = 8000;
+
+// Pré-carrega um array de URLs de imagens e resolve quando todas estiverem prontas
+function preloadImages(urls: string[]): Promise<void> {
+  return Promise.all(
+    urls.map(url => new Promise<void>(resolve => {
+      const img = new Image();
+      img.onload = () => resolve();
+      img.onerror = () => resolve(); // resolve mesmo se falhar — não bloqueia
+      img.src = url;
+    }))
+  ).then(() => undefined);
+}
 
 export default function GalleryLightbox() {
   const [allItems, setAllItems] = useState<GaleriaDB[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [page, setPage] = useState(0);
-  const ITEMS_PER_PAGE = 6;
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [visible, setVisible] = useState(true); // controla opacity
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitioning = useRef(false);
 
   useEffect(() => {
     const fetchGaleria = async () => {
       const { data } = await supabase
-        .from("galeria")
-        .select("*")
-        .eq("ativo", true)
-        .order("ordem");
+        .from("galeria").select("*").eq("ativo", true).order("ordem");
       if (data && data.length > 0) setAllItems(data);
     };
     fetchGaleria();
-    const channel = supabase.channel("galeria-realtime")
+    const ch = supabase.channel("galeria-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "galeria" }, fetchGaleria)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
-  // Rotação automática a cada 8 segundos com fade suave
-  useEffect(() => {
-    if (allItems.length <= ITEMS_PER_PAGE) return;
-    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
-    intervalRef.current = setInterval(() => {
-      setFading(true);
-      setTimeout(() => {
-        setPage(p => (p + 1) % totalPages);
-        setFading(false);
-      }, 400);
-    }, 8000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+
+  // Navega para uma página: pré-carrega → fade out → troca → fade in
+  const goToPage = useCallback(async (nextPage: number) => {
+    if (transitioning.current || allItems.length === 0) return;
+    transitioning.current = true;
+
+    // URLs da próxima página
+    const start = nextPage * ITEMS_PER_PAGE;
+    const nextUrls = allItems
+      .slice(start, start + ITEMS_PER_PAGE)
+      .map(i => i.foto_url)
+      .filter(Boolean) as string[];
+
+    // Pré-carregar antes de qualquer animação
+    await preloadImages(nextUrls);
+
+    // Fade out (200ms)
+    setVisible(false);
+    await new Promise(r => setTimeout(r, 220));
+
+    // Trocar página
+    setPage(nextPage);
+
+    // Fade in (200ms)
+    setVisible(true);
+    await new Promise(r => setTimeout(r, 220));
+
+    transitioning.current = false;
   }, [allItems]);
 
-  // Teclado para lightbox
+  // Auto-avanço
+  const scheduleNext = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      const next = (page + 1) % (Math.ceil(allItems.length / ITEMS_PER_PAGE) || 1);
+      await goToPage(next);
+      scheduleNext();
+    }, INTERVAL_MS);
+  }, [page, allItems, goToPage]);
+
+  useEffect(() => {
+    if (allItems.length > ITEMS_PER_PAGE) scheduleNext();
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [allItems, page]);
+
+  // Pré-carrega a próxima página em background enquanto exibe a atual
+  useEffect(() => {
+    if (allItems.length <= ITEMS_PER_PAGE) return;
+    const nextPage = (page + 1) % totalPages;
+    const start = nextPage * ITEMS_PER_PAGE;
+    const urls = allItems.slice(start, start + ITEMS_PER_PAGE).map(i => i.foto_url).filter(Boolean) as string[];
+    preloadImages(urls);
+  }, [page, allItems]);
+
+  // Teclado lightbox
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (selectedIndex === null) return;
@@ -46,36 +100,19 @@ export default function GalleryLightbox() {
       else if (e.key === "ArrowLeft") setSelectedIndex(p => p !== null ? (p === 0 ? allItems.length - 1 : p - 1) : null);
       else if (e.key === "ArrowRight") setSelectedIndex(p => p !== null ? (p === allItems.length - 1 ? 0 : p + 1) : null);
     };
-    if (selectedIndex !== null) {
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleKey);
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (selectedIndex !== null) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    window.addEventListener("keydown", handleKey);
     return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", handleKey); };
   }, [selectedIndex, allItems]);
 
-  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
-  const visibleItems = allItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
-
-  const [fading, setFading] = useState(false);
-
-  const goToPage = (p: number) => {
-    setFading(true);
-    setTimeout(() => {
-      setPage(p);
-      setFading(false);
-    }, 400);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    const totalP = Math.ceil(allItems.length / ITEMS_PER_PAGE);
-    intervalRef.current = setInterval(() => {
-      setFading(true);
-      setTimeout(() => {
-        setPage(prev => (prev + 1) % totalP);
-        setFading(false);
-      }, 400);
-    }, 8000);
+  const handleDotClick = async (i: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    await goToPage(i);
+    scheduleNext();
   };
+
+  const visibleItems = allItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
   return (
     <section id="galeria" className="py-24 bg-[#F5F4F0]">
@@ -89,15 +126,18 @@ export default function GalleryLightbox() {
           </h2>
           {allItems.length > ITEMS_PER_PAGE && (
             <p className="font-['DM_Sans'] text-[13px] text-[#9B8E7E] mt-2">
-              {allItems.length} fotos · atualizando automaticamente
+              {allItems.length} fotos
             </p>
           )}
         </div>
 
-        {/* Grid 3x2 com transição fade */}
+        {/* Grid com fade controlado por pré-carregamento */}
         <div
           className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8"
-          style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease-in-out' }}
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.2s ease-in-out',
+          }}
         >
           {visibleItems.map((item, idx) => {
             const globalIdx = page * ITEMS_PER_PAGE + idx;
@@ -122,17 +162,16 @@ export default function GalleryLightbox() {
               </div>
             );
           })}
-          {/* Preencher espaços vazios se última página tiver menos de 6 */}
           {Array.from({ length: ITEMS_PER_PAGE - visibleItems.length }).map((_, i) => (
             <div key={`empty-${i}`} className="aspect-square rounded-lg bg-[#E5E0D8]/40" />
           ))}
         </div>
 
-        {/* Dots de navegação */}
+        {/* Dots */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mb-4">
             {Array.from({ length: totalPages }).map((_, i) => (
-              <button key={i} onClick={() => goToPage(i)}
+              <button key={i} onClick={() => handleDotClick(i)}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${
                   page === i ? "w-[18px] h-[6px] bg-[#C41E1E]" : "w-[6px] h-[6px] bg-[#E5E0D8] hover:bg-[#C9C0B4]"
                 }`}
@@ -143,8 +182,10 @@ export default function GalleryLightbox() {
         )}
 
         <p className="font-['DM_Sans'] text-[12px] text-[#9B8E7E] text-center">
-          Siga <a href="https://www.instagram.com/thayssaveiculosbco/" target="_blank" rel="noopener noreferrer"
-            className="text-[#C41E1E] hover:underline">@thayssaveiculosbco</a> no Instagram para mais fotos
+          Siga{" "}
+          <a href="https://www.instagram.com/thayssaveiculosbco/" target="_blank" rel="noopener noreferrer"
+            className="text-[#C41E1E] hover:underline">@thayssaveiculosbco</a>{" "}
+          no Instagram para mais fotos
         </p>
       </div>
 
