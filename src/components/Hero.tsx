@@ -151,7 +151,7 @@ export default function Hero() {
   return (
     <section
       className="relative flex items-center overflow-hidden bg-[#0A0A0A]"
-      style={{ height:"calc(100vh - 109px)", minHeight:480, maxHeight:800 }}
+      style={{ height:"calc(100dvh - 109px)", minHeight:480 }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
