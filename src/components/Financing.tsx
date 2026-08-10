@@ -9,12 +9,12 @@ export default function Financing() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <div>
             <h2 className="text-4xl md:text-6xl font-light font-['Cormorant_Garamond'] mb-8">
-              Crédito para <br />
-              <span className="italic font-bold text-[#C41E1E]">todo mundo.</span>
+              Financiamento facilitado,<br />
+              <span className="italic font-bold text-[#C41E1E]">para o seu perfil.</span>
             </h2>
             
             <ul className="space-y-6">
-              {["Aprovação em até 24h", "Aceitamos seu veículo como entrada", "Taxas exclusivas para seminovos", "Sem burocracia excessiva"].map((item, i) => (
+              {["Análise de crédito ágil — resposta em até 24 horas", "Trabalhamos com todos os perfis de crédito", "Utilizamos seu veículo como parte do pagamento", "Parceria com os principais bancos e financeiras do Brasil", "Condições personalizadas para cada cliente", "Processo transparente, sem surpresas"].map((item, i) => (
                 <li key={i} className="flex items-center gap-4 text-white/70 font-light font-['DM_Sans'] text-lg">
                   <span className="w-1.5 h-1.5 bg-[#C41E1E] rounded-full"></span>
                   {item}
