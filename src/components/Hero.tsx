@@ -192,7 +192,7 @@ export default function Hero() {
         <span style={{
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 900,
-          fontSize: "clamp(8rem, 20vw, 18rem)",
+          fontSize: "clamp(5rem, 12vw, 11rem)",
           letterSpacing: "-0.02em",
           color: "transparent",
           WebkitTextStroke: "1px rgba(196,30,30,0.25)",
@@ -201,8 +201,9 @@ export default function Hero() {
           userSelect: "none",
           lineHeight: 1,
           position: "absolute",
-          left: "-2%",
-          bottom: "0%",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
         }}>
           BCO&CIA
         </span>
