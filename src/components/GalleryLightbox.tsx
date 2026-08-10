@@ -127,11 +127,6 @@ export default function GalleryLightbox() {
           <h2 className="text-4xl md:text-6xl font-light text-[#1A1A1A] font-['Cormorant_Garamond']">
             Nossa <span className="italic font-bold text-[#C41E1E]">galeria.</span>
           </h2>
-          {allItems.length > ITEMS_PER_PAGE && (
-            <p className="font-['DM_Sans'] text-[13px] text-[#9B8E7E] mt-2">
-              {allItems.length} fotos
-            </p>
-          )}
         </div>
 
         {/* Grid com fade controlado por pré-carregamento */}
