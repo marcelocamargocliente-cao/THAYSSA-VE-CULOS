@@ -78,17 +78,14 @@ function Speedometer({ active }: { active: boolean }) {
         <filter id="gw"><feGaussianBlur stdDeviation="2.5" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       </defs>
-
       <circle cx={cx} cy={cy} r={R+22} fill="url(#sbg)"/>
       <circle cx={cx} cy={cy} r={R+22} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1.5"/>
       <circle cx={cx} cy={cy} r={R+10} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
-
       <path d={arcPath(R,startAngle,endAngle)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5" strokeLinecap="round"/>
       <path d={arcPath(R,startAngle+(160/maxSpeed)*totalAngle,endAngle)} fill="none" stroke="rgba(196,30,30,0.15)" strokeWidth="10" strokeLinecap="round"/>
       {speed > 0 && (
         <path d={arcPath(R,startAngle,progressEnd)} fill="none" stroke="#C41E1E" strokeWidth="5" strokeLinecap="round" filter="url(#gr)"/>
       )}
-
       {ticks.map((t,i) => (
         <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
           stroke={t.val>=160?"rgba(196,30,30,0.6)":"rgba(255,255,255,0.3)"}
@@ -99,17 +96,14 @@ function Speedometer({ active }: { active: boolean }) {
           fill={l.val>=160?"rgba(196,30,30,0.7)":"rgba(255,255,255,0.4)"}
           fontSize="12" fontFamily="'Space Grotesk',sans-serif" fontWeight="500">{l.val}</text>
       ))}
-
       <line x1={cx} y1={cy} x2={needleX} y2={needleY}
         stroke="white" strokeWidth="2.5" strokeLinecap="round" filter="url(#gw)"/>
       <line x1={cx} y1={cy}
         x2={cx+(R*0.13)*Math.cos(toRad(needleAngle+180))}
         y2={cy+(R*0.13)*Math.sin(toRad(needleAngle+180))}
         stroke="#C41E1E" strokeWidth="2.5" strokeLinecap="round"/>
-
       <circle cx={cx} cy={cy} r="12" fill="#111" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5"/>
       <circle cx={cx} cy={cy} r="4.5" fill="#C41E1E"/>
-
       <text x={cx} y={cy+48} textAnchor="middle" fill="white"
         fontSize="42" fontFamily="'Space Grotesk',sans-serif" fontWeight="700" letterSpacing="-1">{speed}</text>
       <text x={cx} y={cy+70} textAnchor="middle" fill="rgba(255,255,255,0.3)"
@@ -126,7 +120,6 @@ export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    // Mede tudo que está acima do Hero e desconta do 100dvh
     const measure = () => {
       const section = sectionRef.current;
       if (!section) return;
@@ -135,7 +128,6 @@ export default function Hero() {
     };
     measure();
     window.addEventListener("resize", measure);
-    // Re-mede após fontes/imagens carregarem
     const t = setTimeout(measure, 300);
     return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
   }, []);
@@ -174,37 +166,15 @@ export default function Hero() {
         transform:"translate(50%,-50%)"
       }}/>
 
-      {/* Marca d'água BCO&CIA */}
-      <div className="absolute inset-0 z-0 flex items-center pointer-events-none overflow-hidden"
-        style={{ opacity: phase >= 2 ? 1 : 0, transition: "opacity 1.5s ease 0.5s" }}>
-        <span style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontWeight: 900,
-          fontSize: "clamp(5rem, 12vw, 11rem)",
-          letterSpacing: "-0.02em",
-          color: "transparent",
-          WebkitTextStroke: "1px rgba(196,30,30,0.25)",
-          textTransform: "uppercase",
-          whiteSpace: "nowrap",
-          userSelect: "none",
-          lineHeight: 1,
-          position: "absolute",
-          left: "50%",
-          bottom: "-2%",
-          transform: "translateX(-50%)",
-        }}>
-          BCO&CIA
-        </span>
-      </div>
-
+      {/* GRID principal */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 pt-6
-        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-start"
+        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-start flex-1"
       >
         {/* ESQUERDA */}
         <div className="flex flex-col">
 
-          {/* Nome */}
-          <div style={tr(1,"0.05s")} className="mb-3">
+          {/* Título */}
+          <div style={tr(1,"0.05s")} className="mb-2">
             <div style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 900,
@@ -224,6 +194,27 @@ export default function Hero() {
               <span style={{ color: "#fff", display: "block" }}>Veículos</span>
             </div>
           </div>
+
+          {/* BCO&CIA entre título e velocímetro — menor, sutil */}
+          <div style={{
+            ...tr(2, "0.1s"),
+            marginBottom: 12,
+          }}>
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(1.1rem, 2.5vw, 1.9rem)",
+              letterSpacing: "0.05em",
+              color: "transparent",
+              WebkitTextStroke: "1px rgba(196,30,30,0.45)",
+              textTransform: "uppercase",
+              userSelect: "none",
+              lineHeight: 1,
+            }}>
+              BCO&CIA
+            </span>
+          </div>
+
           <style>{`
             @keyframes shimmer {
               0% { background-position: 0% center; }
