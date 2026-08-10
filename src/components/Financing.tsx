@@ -31,7 +31,7 @@ export default function Financing() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="border border-white/10 p-6 flex items-center justify-center text-[10px] tracking-[0.3em] font-bold text-white/40 font-['DM_Sans'] uppercase"
+                className="border border-[#C41E1E]/40 hover:border-[#C41E1E] p-6 flex items-center justify-center text-[10px] tracking-[0.3em] font-bold text-white/50 hover:text-white font-['DM_Sans'] uppercase transition-all duration-200"
               >
                 {bank}
               </motion.div>
