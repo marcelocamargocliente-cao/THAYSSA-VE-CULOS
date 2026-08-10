@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabaseAdmin, STORAGE_URL, VehicleDB, GaleriaDB } from "../lib/supabase";
 
-
 const SB_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
 const SB_SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
 const sbFetch = async (path: string, opts: RequestInit = {}) => {
@@ -45,6 +44,7 @@ export default function AdminPanel() {
   const [galeria, setGaleria] = useState<GaleriaDB[]>([]);
   const [editando, setEditando] = useState<VehicleDB | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galeriaInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,18 +121,17 @@ export default function AdminPanel() {
     showToast("Sessão encerrada", "info");
   };
 
+  // CORRIGIDO: retorna a URL diretamente (não usa estado)
   const uploadFoto = async (file: File, bucket: string): Promise<string | null> => {
     setUploading(true);
     const ext = file.name.split(".").pop();
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const SUPABASE_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
-    const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
 
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${filename}`, {
+    const r = await fetch(`${SB_URL}/storage/v1/object/${bucket}/${filename}`, {
       method: 'POST',
       headers: {
-        'apikey': SK,
-        'Authorization': `Bearer ${SK}`,
+        'apikey': SB_SK,
+        'Authorization': `Bearer ${SB_SK}`,
         'Content-Type': file.type || 'image/jpeg',
         'x-upsert': 'true'
       },
@@ -145,18 +144,16 @@ export default function AdminPanel() {
       showToast(`Erro no upload: ${r.status} ${txt.slice(0,60)}`, "error");
       return null;
     }
-    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filename}`;
+    return `${SB_URL}/storage/v1/object/public/${bucket}/${filename}`;
   };
 
   const salvarVeiculo = async (v: VehicleDB) => {
-    const SUPABASE_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
-    const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
-
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/estoque?id=eq.${v.id}`, {
+    setSalvando(true);
+    const r = await fetch(`${SB_URL}/rest/v1/estoque?id=eq.${v.id}`, {
       method: 'PATCH',
       headers: {
-        'apikey': SK,
-        'Authorization': `Bearer ${SK}`,
+        'apikey': SB_SK,
+        'Authorization': `Bearer ${SB_SK}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
@@ -167,18 +164,46 @@ export default function AdminPanel() {
       })
     });
 
+    setSalvando(false);
     if (!r.ok) { showToast("Erro ao salvar: " + r.status, "error"); return; }
-    showToast("✓ Veículo atualizado! Recarregando...");
+    showToast("✓ Veículo atualizado!");
     setEditando(null);
     fetchData();
     // Forçar reload do carrossel via evento customizado
     setTimeout(() => window.dispatchEvent(new Event('estoque-updated')), 500);
   };
 
+  // CORRIGIDO: faz upload E já salva no banco atomicamente
   const uploadFotoVeiculo = async (file: File) => {
     if (!editando) return;
     const url = await uploadFoto(file, "fotos-estoque");
-    if (url) setEditando(prev => prev ? { ...prev, foto_url: url } : prev);
+    if (!url) return;
+
+    // Atualiza o estado local para mostrar a preview
+    const veiculoAtualizado = { ...editando, foto_url: url };
+    setEditando(veiculoAtualizado);
+
+    // SALVA IMEDIATAMENTE no banco com a URL recém-gerada
+    // (não depende do estado React que pode não ter atualizado ainda)
+    setSalvando(true);
+    const r = await fetch(`${SB_URL}/rest/v1/estoque?id=eq.${editando.id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SB_SK,
+        'Authorization': `Bearer ${SB_SK}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ foto_url: url })
+    });
+    setSalvando(false);
+
+    if (!r.ok) {
+      showToast("Upload ok, mas erro ao salvar foto no banco: " + r.status, "error");
+    } else {
+      showToast("✓ Foto salva!");
+      fetchData();
+    }
   };
 
   const uploadFotoGaleria = async (file: File, galeriaId?: string) => {
@@ -284,8 +309,8 @@ export default function AdminPanel() {
                     {/* Foto */}
                     <div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:"#9B8E7E", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Foto do Veículo</div>
-                      <div onClick={() => fileInputRef.current?.click()}
-                        style={{ background:"#141414", border:"1px dashed #333", borderRadius:8, aspectRatio:"16/10", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", overflow:"hidden", position:"relative" }}>
+                      <div onClick={() => !uploading && fileInputRef.current?.click()}
+                        style={{ background:"#141414", border:"1px dashed #333", borderRadius:8, aspectRatio:"16/10", display:"flex", alignItems:"center", justifyContent:"center", cursor: uploading ? "wait" : "pointer", overflow:"hidden", position:"relative" }}>
                         {editando.foto_url ? (
                           <img src={editando.foto_url} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                         ) : (
@@ -293,9 +318,14 @@ export default function AdminPanel() {
                             {uploading ? "Enviando..." : "📷 Clique para adicionar foto"}
                           </div>
                         )}
+                        {uploading && (
+                          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.6)", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:13 }}>
+                            Enviando foto...
+                          </div>
+                        )}
                       </div>
                       <input ref={fileInputRef} type="file" accept="image/*" style={{ display:"none" }}
-                        onChange={e => { if (e.target.files?.[0]) uploadFotoVeiculo(e.target.files[0]); }}/>
+                        onChange={e => { if (e.target.files?.[0]) uploadFotoVeiculo(e.target.files[0]); e.target.value = ""; }}/>
                     </div>
 
                     {[
@@ -350,9 +380,12 @@ export default function AdminPanel() {
                     </label>
 
                     <div style={{ display:"flex", gap:8 }}>
-                      <button onClick={() => salvarVeiculo(editando)}
-                        style={{ flex:1, background:"#C41E1E", color:"#fff", border:"none", borderRadius:6, padding:"11px", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-                        {uploading ? "Enviando..." : "✓ Salvar"}
+                      {/* Botão desabilitado enquanto upload ou salvando */}
+                      <button
+                        onClick={() => !uploading && !salvando && salvarVeiculo(editando)}
+                        disabled={uploading || salvando}
+                        style={{ flex:1, background: uploading || salvando ? "#666" : "#C41E1E", color:"#fff", border:"none", borderRadius:6, padding:"11px", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor: uploading || salvando ? "not-allowed" : "pointer" }}>
+                        {uploading ? "Enviando foto..." : salvando ? "Salvando..." : "✓ Salvar"}
                       </button>
                       <button onClick={() => setEditando(null)}
                         style={{ flex:1, background:"none", border:"1px solid #333", borderRadius:6, padding:"11px", color:"#9B8E7E", fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>
