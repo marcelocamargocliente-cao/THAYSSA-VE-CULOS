@@ -21,7 +21,7 @@ export default function CountdownTimer() {
   }, []);
 
   return (
-    <section className="bg-[#1A1A1A] py-1.5 px-4 border-b border-[#333]">
+    <section className="bg-[#1A1A1A] py-1.5 px-4 border-t border-[#2A2A2A]">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-4">
         <span className="text-[#9B8E7E] text-[9px] font-medium tracking-[0.2em] font-['DM_Sans'] uppercase">
           Ofertas especiais — condições exclusivas até:
