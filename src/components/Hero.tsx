@@ -131,6 +131,24 @@ function Speedometer({ active }: { active: boolean }) {
 
 export default function Hero() {
   const [phase, setPhase] = useState(0);
+  const [offsetTop, setOffsetTop] = useState(109);
+
+  useEffect(() => {
+    // Mede a altura real do nav + marquee para calcular o espaço disponível
+    const measure = () => {
+      const nav = document.querySelector('nav');
+      const marquee = document.querySelector('[class*="brands"]') || 
+                       document.querySelector('[class*="BrandsMarquee"]') ||
+                       document.querySelector('.brands-track')?.closest('div');
+      const navH = nav ? nav.getBoundingClientRect().bottom : 73;
+      const marqueeEl = document.querySelector('[class*="bg-\\[#F0EDE8\\]"]');
+      const marqueeH = marqueeEl ? marqueeEl.getBoundingClientRect().bottom : 109;
+      setOffsetTop(Math.round(marqueeH));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   useEffect(() => {
     const t = [
@@ -150,8 +168,8 @@ export default function Hero() {
 
   return (
     <section
-      className="relative flex flex-col justify-center overflow-hidden bg-[#0A0A0A] py-8"
-      style={{ minHeight:"calc(100dvh - 109px)" }}
+      className="relative flex items-center overflow-hidden bg-[#0A0A0A]"
+      style={{ height:`calc(100dvh - ${offsetTop}px)` }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
