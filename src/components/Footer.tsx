@@ -28,7 +28,6 @@ export default function Footer() {
               <h5 className="text-[10px] font-bold tracking-[0.2em] text-[#1A1A1A] mb-6 uppercase font-['DM_Sans']">Social</h5>
               <ul className="space-y-4 text-[13px] font-light text-[#6B6B6B] font-['DM_Sans']">
                 <li><a href="https://instagram.com/thayssaveiculosbco" className="hover:text-[#C41E1E] transition-colors">Instagram</a></li>
-                <li><a href="#" className="hover:text-[#C41E1E] transition-colors">Facebook</a></li>
               </ul>
             </div>
           </div>
