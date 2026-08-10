@@ -168,7 +168,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative flex items-center overflow-hidden bg-[#0A0A0A] py-10"
+      className="relative flex items-start overflow-hidden bg-[#0A0A0A] pt-6"
       style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)" }}
     >
       {/* Linhas diagonais fundo */}
