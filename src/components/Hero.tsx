@@ -180,7 +180,7 @@ export default function Hero() {
 
           <div style={tr(2,"0.05s")} className="mb-1">
             <h1 className="font-['DM_Sans'] font-black tracking-tighter leading-[0.9]"
-              style={{ fontSize:"clamp(2.4rem,6.2vw,5.4rem)" }}>
+              style={{ fontSize:"clamp(2rem,5.5vw,4.8rem)" }}>
               <span className="text-white block">SEU</span>
               <span className="text-[#C41E1E] block">PRÓXIMO</span>
               <span className="text-white block">VEÍCULO.</span>
