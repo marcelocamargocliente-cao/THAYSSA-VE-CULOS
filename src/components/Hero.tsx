@@ -171,37 +171,37 @@ export default function Hero() {
         {/* ESQUERDA */}
         <div className="flex flex-col">
 
-          <div style={tr(1)} className="flex items-center gap-3 mb-3">
+          <div style={tr(1)} className="flex items-center gap-3 mb-2">
             <div className="w-7 h-[1px] bg-[#C41E1E]"/>
             <span className="text-[#9B8E7E] text-[10px] tracking-[0.25em] font-['DM_Sans'] uppercase">
               Cosmos · Rio de Janeiro
             </span>
           </div>
 
-          <div style={tr(2,"0.05s")} className="mb-2">
+          <div style={tr(2,"0.05s")} className="mb-1">
             <h1 className="font-['DM_Sans'] font-black tracking-tighter leading-[0.9]"
-              style={{ fontSize:"clamp(2.6rem,6.8vw,5.8rem)" }}>
+              style={{ fontSize:"clamp(2.4rem,6.2vw,5.4rem)" }}>
               <span className="text-white block">SEU</span>
               <span className="text-[#C41E1E] block">PRÓXIMO</span>
               <span className="text-white block">VEÍCULO.</span>
             </h1>
           </div>
 
-          <div style={tr(2,"0.1s")} className="mb-3">
+          <div style={tr(2,"0.1s")} className="mb-2">
             <span className="font-['Cormorant_Garamond'] italic text-[#9B8E7E] font-light"
-              style={{ fontSize:"clamp(0.95rem,1.8vw,1.25rem)" }}>
+              style={{ fontSize:"clamp(0.9rem,1.6vw,1.15rem)" }}>
               Na largada desde o primeiro contato.
             </span>
           </div>
 
-          <div style={tr(3,"0.05s")} className="mb-4">
+          <div style={tr(3,"0.05s")} className="mb-3">
             <p className="text-[#4A4A4A] text-xs font-['DM_Sans'] font-light leading-relaxed max-w-xs">
               Troca, financia e consigna.<br/>
               Carros e motos seminovos em Cosmos, RJ.
             </p>
           </div>
 
-          <div style={tr(3,"0.1s")} className="flex flex-wrap gap-3 mb-5">
+          <div style={tr(3,"0.1s")} className="flex flex-wrap gap-3 mb-4">
             <a href="#estoque"
               className="group relative inline-flex items-center gap-2 px-8 py-3 bg-[#C41E1E] text-white font-['DM_Sans'] text-[10px] font-bold tracking-[0.22em] uppercase overflow-hidden">
               <span className="relative z-10">Ver estoque</span>
@@ -214,7 +214,7 @@ export default function Hero() {
             </a>
           </div>
 
-          <div style={tr(4)} className="grid grid-cols-4 gap-4 pt-4 border-t border-white/8">
+          <div style={tr(4)} className="grid grid-cols-4 gap-4 pt-3 border-t border-white/8">
             {[
               { num:"500+", label:"Vendidos" },
               { num:"4.9★", label:"Google" },
@@ -222,8 +222,8 @@ export default function Hero() {
               { num:"5 anos", label:"História" },
             ].map((s,i) => (
               <div key={i}>
-                <div className="text-white font-['Space_Grotesk'] font-bold leading-none mb-1"
-                  style={{ fontSize:"clamp(1rem,1.8vw,1.25rem)" }}>{s.num}</div>
+                <div className="text-white font-['Space_Grotesk'] font-bold leading-none mb-0.5"
+                  style={{ fontSize:"clamp(0.95rem,1.6vw,1.15rem)" }}>{s.num}</div>
                 <div className="text-[#444] text-[9px] tracking-[0.1em] uppercase font-['DM_Sans']">{s.label}</div>
               </div>
             ))}
