@@ -168,8 +168,8 @@ export default function Hero() {
 
   return (
     <section
-      className="relative flex items-start overflow-hidden bg-[#0A0A0A] pt-6"
-      style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)" }}
+      className="relative overflow-hidden bg-[#0A0A0A] pt-4 pb-4"
+      style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)", display:"flex", alignItems:"flex-start" }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
