@@ -216,13 +216,6 @@ export default function Hero() {
         {/* ESQUERDA */}
         <div className="flex flex-col">
 
-          <div style={tr(1)} className="flex items-center gap-3 mb-2">
-            <div className="w-7 h-[1px] bg-[#C41E1E]"/>
-            <span className="text-[#9B8E7E] text-[10px] tracking-[0.25em] font-['DM_Sans'] uppercase">
-              Cosmos · Rio de Janeiro
-            </span>
-          </div>
-
           {/* Nome da marca */}
           <div style={tr(1,"0.05s")} className="mb-2">
             <span style={{
