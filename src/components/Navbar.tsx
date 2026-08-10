@@ -18,6 +18,7 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-10 text-[#8B7355] text-[11px] font-medium tracking-[0.2em] font-['DM_Sans'] uppercase">
           <a href="#estoque" className="hover:text-[#C41E1E] transition-colors">Estoque</a>
+          <a href="#galeria" className="hover:text-[#C41E1E] transition-colors">Galeria</a>
           <a href="#financiamento" className="hover:text-[#C41E1E] transition-colors">Financiamento</a>
           <a href="#sobre" className="hover:text-[#C41E1E] transition-colors">Sobre</a>
           <a href="#contato" className="hover:text-[#C41E1E] transition-colors">Contato</a>
