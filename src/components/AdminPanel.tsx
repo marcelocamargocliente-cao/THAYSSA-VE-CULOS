@@ -11,7 +11,7 @@ const sbFetch = async (path: string, opts: RequestInit = {}) => {
       'apikey': SB_SK,
       'Authorization': `Bearer ${SB_SK}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
+      'Prefer': 'return=minimal',
       ...(opts.headers || {}),
     }
   });
@@ -168,15 +168,17 @@ export default function AdminPanel() {
     });
 
     if (!r.ok) { showToast("Erro ao salvar: " + r.status, "error"); return; }
-    showToast("✓ Veículo atualizado!");
+    showToast("✓ Veículo atualizado! Recarregando...");
     setEditando(null);
     fetchData();
+    // Forçar reload do carrossel via evento customizado
+    setTimeout(() => window.dispatchEvent(new Event('estoque-updated')), 500);
   };
 
   const uploadFotoVeiculo = async (file: File) => {
     if (!editando) return;
     const url = await uploadFoto(file, "fotos-estoque");
-    if (url) setEditando({ ...editando, foto_url: url });
+    if (url) setEditando(prev => prev ? { ...prev, foto_url: url } : prev);
   };
 
   const uploadFotoGaleria = async (file: File, galeriaId?: string) => {

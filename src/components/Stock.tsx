@@ -40,7 +40,8 @@ export default function Stock() {
       .channel('estoque-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, fetchVehicles)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    window.addEventListener('estoque-updated', fetchVehicles);
+    return () => { supabase.removeChannel(channel); window.removeEventListener('estoque-updated', fetchVehicles); };
   }, []);
 
   const N = vehicles.length;
