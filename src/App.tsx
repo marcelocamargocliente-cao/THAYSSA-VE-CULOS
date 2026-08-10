@@ -4,7 +4,6 @@
  */
 
 import Navbar from "./components/Navbar";
-import BrandsMarquee from "./components/BrandsMarquee";
 import Hero from "./components/Hero";
 import ServicesBar from "./components/ServicesBar";
 import CountdownTimer from "./components/CountdownTimer";
@@ -28,7 +27,6 @@ export default function App() {
       <Navbar />
       <ServicesBar />
       <CountdownTimer />
-      <BrandsMarquee />
 
       <main>
         <Hero />
