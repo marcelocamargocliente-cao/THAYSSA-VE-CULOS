@@ -183,6 +183,32 @@ export default function Hero() {
         transform:"translate(50%,-50%)"
       }}/>
 
+      {/* MARCA D'ÁGUA — BCO&CIA atrás do conteúdo */}
+      <div className="absolute inset-0 z-0 flex items-center pointer-events-none overflow-hidden"
+        style={{
+          opacity: phase >= 2 ? 1 : 0,
+          transition: "opacity 1.5s ease 0.5s",
+        }}>
+        <span style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 900,
+          fontSize: "clamp(8rem, 20vw, 18rem)",
+          letterSpacing: "-0.02em",
+          color: "transparent",
+          WebkitTextStroke: "1px rgba(255,255,255,0.04)",
+          textTransform: "uppercase",
+          whiteSpace: "nowrap",
+          userSelect: "none",
+          lineHeight: 1,
+          position: "absolute",
+          left: "-2%",
+          top: "50%",
+          transform: "translateY(-50%)",
+        }}>
+          BCO&CIA
+        </span>
+      </div>
+
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16
         grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-center"
       >
