@@ -15,7 +15,7 @@ export default function FinalCTA() {
         </h2>
         
         <p className="text-[#6B6B6B] text-lg font-light font-['DM_Sans'] mb-12 max-w-xl mx-auto leading-relaxed">
-          Nossa equipe editorial está à disposição para proporcionar a melhor experiência de aquisição automotiva da Zona Oeste.
+          Nossa equipe especializada está pronta para oferecer uma experiência de compra personalizada e sem complicações na Zona Oeste do Rio.
         </p>
 
         <a 
