@@ -91,10 +91,10 @@ function Speedometer({ active }: { active: boolean }) {
       <circle cx={cx} cy={cy} r={R+22} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1.5"/>
       <circle cx={cx} cy={cy} r={R+10} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
 
-      <path d={arcPath(R,startAngle,endAngle)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" strokeLinecap="round"/>
-      <path d={arcPath(R,startAngle+(160/maxSpeed)*totalAngle,endAngle)} fill="none" stroke="rgba(196,30,30,0.15)" strokeWidth="20" strokeLinecap="round"/>
+      <path d={arcPath(R,startAngle,endAngle)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5" strokeLinecap="round"/>
+      <path d={arcPath(R,startAngle+(160/maxSpeed)*totalAngle,endAngle)} fill="none" stroke="rgba(196,30,30,0.15)" strokeWidth="10" strokeLinecap="round"/>
       {speed > 0 && (
-        <path d={arcPath(R,startAngle,progressEnd)} fill="none" stroke="#C41E1E" strokeWidth="10" strokeLinecap="round" filter="url(#gr)"/>
+        <path d={arcPath(R,startAngle,progressEnd)} fill="none" stroke="#C41E1E" strokeWidth="5" strokeLinecap="round" filter="url(#gr)"/>
       )}
 
       {ticks.map((t,i) => (
@@ -166,7 +166,7 @@ export default function Hero() {
       }}/>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16
-        grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 items-center">
+        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 items-center">
 
         {/* ESQUERDA */}
         <div className="flex flex-col">
