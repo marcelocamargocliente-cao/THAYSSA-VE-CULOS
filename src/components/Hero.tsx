@@ -151,7 +151,7 @@ export default function Hero() {
   return (
     <section
       className="relative flex items-center overflow-hidden bg-[#0A0A0A]"
-      style={{ height:"calc(100vh - 109px)", minHeight:500, maxHeight:820 }}
+      style={{ height:"calc(100vh - 109px)", minHeight:480, maxHeight:800 }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
@@ -240,21 +240,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20"
-        style={{ opacity: phase >= 4 ? 0.6 : 0, transition:"opacity 0.8s ease" }}>
-        <div className="w-[1px] h-7 bg-white/15 relative overflow-hidden mx-auto">
-          <div className="absolute top-0 w-full bg-[#C41E1E]"
-            style={{ height:"40%", animation:"scrollPulse 1.8s ease-in-out infinite" }}/>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes scrollPulse {
-          0%{transform:translateY(-100%);opacity:1}
-          100%{transform:translateY(300%);opacity:0}
-        }
-      `}</style>
+      {/* Scroll indicator removido para ganhar espaço */}
     </section>
   );
 }
