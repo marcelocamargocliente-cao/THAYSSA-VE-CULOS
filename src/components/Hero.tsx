@@ -216,23 +216,26 @@ export default function Hero() {
         {/* ESQUERDA */}
         <div className="flex flex-col">
 
-          {/* Nome da marca */}
-          <div style={tr(1,"0.05s")} className="mb-2">
-            <span style={{
+          {/* Nome da marca — GRANDE e impactante */}
+          <div style={tr(1,"0.05s")} className="mb-3">
+            <div style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 900,
-              fontSize: "clamp(1.1rem, 2.5vw, 1.8rem)",
-              letterSpacing: "0.15em",
+              fontSize: "clamp(2.8rem,7vw,6rem)",
+              letterSpacing: "-0.02em",
+              lineHeight: 0.9,
               textTransform: "uppercase",
-              background: "linear-gradient(90deg, #C41E1E 0%, #FF4444 50%, #C41E1E 100%)",
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              animation: "shimmer 3s linear infinite",
-              display: "inline-block",
             }}>
-              BCO&CIA · Thayssa Veículos
-            </span>
+              <span style={{
+                background: "linear-gradient(90deg, #C41E1E 0%, #FF4444 50%, #C41E1E 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                animation: "shimmer 3s linear infinite",
+                display: "block",
+              }}>Thayssa</span>
+              <span style={{ color: "#fff", display: "block" }}>Veículos</span>
+            </div>
           </div>
           <style>{`
             @keyframes shimmer {
@@ -241,20 +244,19 @@ export default function Hero() {
             }
           `}</style>
 
-          <div style={tr(2,"0.05s")} className="mb-1">
-            <h1 className="font-['DM_Sans'] font-black tracking-tighter leading-[0.9]"
-              style={{ fontSize:"clamp(2rem,5.5vw,4.8rem)" }}>
-              <span className="text-white block">SEU</span>
-              <span className="text-[#C41E1E] block">PRÓXIMO</span>
-              <span className="text-white block">VEÍCULO.</span>
-            </h1>
-          </div>
-
-          <div style={tr(2,"0.1s")} className="mb-2">
-            <span className="font-['Cormorant_Garamond'] italic text-[#9B8E7E] font-light"
-              style={{ fontSize:"clamp(0.9rem,1.6vw,1.15rem)" }}>
-              Na largada desde o primeiro contato.
-            </span>
+          {/* Headline — menor, como subtítulo */}
+          <div style={tr(2,"0.05s")} className="mb-2">
+            <p style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontStyle: "italic",
+              fontWeight: 400,
+              fontSize: "clamp(1rem,2vw,1.4rem)",
+              color: "rgba(255,255,255,0.45)",
+              letterSpacing: "0.05em",
+              lineHeight: 1.3,
+            }}>
+              Seu próximo veículo,<br/>na largada desde o primeiro contato.
+            </p>
           </div>
 
           <div style={tr(3,"0.05s")} className="mb-3">
