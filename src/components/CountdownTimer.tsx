@@ -38,7 +38,7 @@ export default function CountdownTimer() {
   }, []);
 
   return (
-    <section className="bg-[#1A1A1A] py-6 px-4 border-y border-[#333333]">
+    <section className="bg-[#1A1A1A] py-2 px-4 border-y border-[#333333]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6 text-center">
         <span className="text-[#9B8E7E] text-[11px] font-medium tracking-[0.2em] font-['DM_Sans'] uppercase">
           OFERTAS ESPECIAIS — CONDIÇÕES EXCLUSIVAS ATÉ:
@@ -53,9 +53,9 @@ export default function CountdownTimer() {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="bg-[#222222] border border-[#333333] rounded-[6px] px-4 py-2 min-w-[64px] text-center"
+              className="bg-[#222222] border border-[#333333] rounded-[4px] px-3 py-1.5 min-w-[52px] text-center"
             >
-              <div className="font-['Playfair_Display'] font-bold italic text-2xl text-[#C41E1E] leading-none mb-1">
+              <div className="font-['Playfair_Display'] font-bold italic text-lg text-[#C41E1E] leading-none mb-0.5">
                 {item.value}
               </div>
               <div className="font-['DM_Sans'] font-light text-[10px] tracking-wider text-[#9B8E7E] uppercase leading-none">
