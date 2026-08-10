@@ -295,11 +295,22 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* DIREITA — velocímetro */}
+        {/* DIREITA — velocímetro desktop */}
         <div className="hidden lg:flex items-center justify-center" style={{
           opacity: phase >= 1 ? 1 : 0,
           transform: phase >= 1 ? "scale(1) rotate(0deg)" : "scale(0.82) rotate(-10deg)",
           transition: "opacity 1s ease 0.1s, transform 1.2s cubic-bezier(0.22,1,0.36,1) 0.1s",
+        }}>
+          <Speedometer active={phase >= 1}/>
+        </div>
+
+        {/* MOBILE — velocímetro centralizado abaixo do texto */}
+        <div className="flex lg:hidden items-center justify-center w-full" style={{
+          opacity: phase >= 1 ? 1 : 0,
+          transform: phase >= 1 ? "scale(1)" : "scale(0.85)",
+          transition: "opacity 1s ease 0.2s, transform 1s ease 0.2s",
+          maxWidth: 240,
+          margin: "0 auto",
         }}>
           <Speedometer active={phase >= 1}/>
         </div>
