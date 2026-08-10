@@ -25,21 +25,13 @@ import AdminPanel from "./components/AdminPanel";
 export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F4F0] font-['DM_Sans'] selection:bg-[#C41E1E] selection:text-white">
-      {/* Meta Pixel & Google Analytics Placeholder */}
-      {/* 
-        <script>
-          // Meta Pixel Code
-          // Google Analytics Code
-        </script>
-      */}
-
       <Navbar />
-      <BrandsMarquee />
-      
+      <ServicesBar />
+      <CountdownTimer />
+
       <main>
         <Hero />
-        <ServicesBar />
-        <CountdownTimer />
+        <BrandsMarquee />
         <Differentials />
         <Stock />
         <HowItWorks />
@@ -58,4 +50,3 @@ export default function App() {
     </div>
   );
 }
-
