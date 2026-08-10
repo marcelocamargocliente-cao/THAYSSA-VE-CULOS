@@ -4,13 +4,10 @@ function Speedometer({ active }: { active: boolean }) {
   const [speed, setSpeed] = useState(0);
   const rafRef = useRef<number>(0);
   const startRef = useRef<number | null>(null);
-  const oscillating = useRef(false);
   const oscRef = useRef<number>(0);
 
   useEffect(() => {
     if (!active) return;
-
-    // Fase 1: acelera de 0 → 220 em 2s
     const accelerate = (now: number) => {
       if (!startRef.current) startRef.current = now;
       const p = Math.min((now - startRef.current) / 2000, 1);
@@ -19,21 +16,16 @@ function Speedometer({ active }: { active: boolean }) {
       if (p < 1) {
         rafRef.current = requestAnimationFrame(accelerate);
       } else {
-        // Fase 2: oscila entre 195 e 220 indefinidamente
-        oscillating.current = true;
         oscRef.current = 0;
         const oscillate = () => {
           oscRef.current += 0.04;
-          // Oscilação suave: seno com amplitude ±12 e deriva lenta
-          const osc = Math.sin(oscRef.current * 1.3) * 12
-                    + Math.sin(oscRef.current * 0.7) * 6;
+          const osc = Math.sin(oscRef.current * 1.3) * 12 + Math.sin(oscRef.current * 0.7) * 6;
           setSpeed(Math.round(208 + osc));
           rafRef.current = requestAnimationFrame(oscillate);
         };
         rafRef.current = requestAnimationFrame(oscillate);
       }
     };
-
     rafRef.current = requestAnimationFrame(accelerate);
     return () => cancelAnimationFrame(rafRef.current);
   }, [active]);
@@ -108,7 +100,6 @@ function Speedometer({ active }: { active: boolean }) {
           fontSize="12" fontFamily="'Space Grotesk',sans-serif" fontWeight="500">{l.val}</text>
       ))}
 
-      {/* Ponteiro */}
       <line x1={cx} y1={cy} x2={needleX} y2={needleY}
         stroke="white" strokeWidth="2.5" strokeLinecap="round" filter="url(#gw)"/>
       <line x1={cx} y1={cy}
@@ -131,23 +122,22 @@ function Speedometer({ active }: { active: boolean }) {
 
 export default function Hero() {
   const [phase, setPhase] = useState(0);
-  const [offsetTop, setOffsetTop] = useState(109);
+  const [heroHeight, setHeroHeight] = useState("100dvh");
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    // Mede a altura real do nav + marquee para calcular o espaço disponível
+    // Mede tudo que está acima do Hero e desconta do 100dvh
     const measure = () => {
-      const nav = document.querySelector('nav');
-      const marquee = document.querySelector('[class*="brands"]') || 
-                       document.querySelector('[class*="BrandsMarquee"]') ||
-                       document.querySelector('.brands-track')?.closest('div');
-      const navH = nav ? nav.getBoundingClientRect().bottom : 73;
-      const marqueeEl = document.querySelector('[class*="bg-\\[#F0EDE8\\]"]');
-      const marqueeH = marqueeEl ? marqueeEl.getBoundingClientRect().bottom : 109;
-      setOffsetTop(Math.round(marqueeH));
+      const section = sectionRef.current;
+      if (!section) return;
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      setHeroHeight(`calc(100dvh - ${Math.round(top)}px)`);
     };
     measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    window.addEventListener("resize", measure);
+    // Re-mede após fontes/imagens carregarem
+    const t = setTimeout(measure, 300);
+    return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
   }, []);
 
   useEffect(() => {
@@ -168,8 +158,9 @@ export default function Hero() {
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden bg-[#0A0A0A] flex flex-col"
-      style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)" }}
+      style={{ minHeight: heroHeight, maxHeight: heroHeight }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
@@ -183,12 +174,9 @@ export default function Hero() {
         transform:"translate(50%,-50%)"
       }}/>
 
-      {/* MARCA D'ÁGUA — BCO&CIA atrás do conteúdo */}
+      {/* Marca d'água BCO&CIA */}
       <div className="absolute inset-0 z-0 flex items-center pointer-events-none overflow-hidden"
-        style={{
-          opacity: phase >= 2 ? 1 : 0,
-          transition: "opacity 1.5s ease 0.5s",
-        }}>
+        style={{ opacity: phase >= 2 ? 1 : 0, transition: "opacity 1.5s ease 0.5s" }}>
         <span style={{
           fontFamily: "'DM Sans', sans-serif",
           fontWeight: 900,
@@ -212,16 +200,15 @@ export default function Hero() {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 pt-6
         grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-start"
       >
-
         {/* ESQUERDA */}
         <div className="flex flex-col">
 
-          {/* Nome da marca — GRANDE e impactante */}
+          {/* Nome */}
           <div style={tr(1,"0.05s")} className="mb-3">
             <div style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 900,
-              fontSize: "clamp(2.8rem,7vw,6rem)",
+              fontSize: "clamp(2.4rem,5.5vw,5rem)",
               letterSpacing: "-0.02em",
               lineHeight: 0.9,
               textTransform: "uppercase",
@@ -244,7 +231,7 @@ export default function Hero() {
             }
           `}</style>
 
-          {/* Headline — menor, como subtítulo */}
+          {/* Headline */}
           <div style={tr(2,"0.05s")} className="mb-2">
             <p style={{
               fontFamily: "'Cormorant Garamond', serif",
@@ -304,7 +291,7 @@ export default function Hero() {
           <Speedometer active={phase >= 1}/>
         </div>
 
-        {/* MOBILE — velocímetro centralizado abaixo do texto */}
+        {/* MOBILE — velocímetro */}
         <div className="flex lg:hidden items-center justify-center w-full" style={{
           opacity: phase >= 1 ? 1 : 0,
           transform: phase >= 1 ? "scale(1)" : "scale(0.85)",
@@ -315,8 +302,6 @@ export default function Hero() {
           <Speedometer active={phase >= 1}/>
         </div>
       </div>
-
-      {/* Scroll indicator removido para ganhar espaço */}
     </section>
   );
 }
