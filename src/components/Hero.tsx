@@ -195,7 +195,7 @@ export default function Hero() {
           fontSize: "clamp(8rem, 20vw, 18rem)",
           letterSpacing: "-0.02em",
           color: "transparent",
-          WebkitTextStroke: "1px rgba(255,255,255,0.04)",
+          WebkitTextStroke: "1px rgba(196,30,30,0.25)",
           textTransform: "uppercase",
           whiteSpace: "nowrap",
           userSelect: "none",
@@ -222,6 +222,31 @@ export default function Hero() {
               Cosmos · Rio de Janeiro
             </span>
           </div>
+
+          {/* Nome da marca */}
+          <div style={tr(1,"0.05s")} className="mb-2">
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(1.1rem, 2.5vw, 1.8rem)",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              background: "linear-gradient(90deg, #C41E1E 0%, #FF4444 50%, #C41E1E 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              animation: "shimmer 3s linear infinite",
+              display: "inline-block",
+            }}>
+              BCO&CIA · Thayssa Veículos
+            </span>
+          </div>
+          <style>{`
+            @keyframes shimmer {
+              0% { background-position: 0% center; }
+              100% { background-position: 200% center; }
+            }
+          `}</style>
 
           <div style={tr(2,"0.05s")} className="mb-1">
             <h1 className="font-['DM_Sans'] font-black tracking-tighter leading-[0.9]"
