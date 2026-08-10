@@ -150,8 +150,8 @@ export default function Hero() {
 
   return (
     <section
-      className="relative flex flex-col overflow-hidden bg-[#0A0A0A]"
-      style={{ height:"calc(100dvh - 109px)", minHeight:480 }}
+      className="relative flex flex-col justify-center overflow-hidden bg-[#0A0A0A] py-8"
+      style={{ minHeight:"calc(100dvh - 109px)" }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
@@ -165,8 +165,8 @@ export default function Hero() {
         transform:"translate(50%,-50%)"
       }}/>
 
-      <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-6 md:px-16
-        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-center py-8"
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16
+        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-center"
       >
 
         {/* ESQUERDA */}
