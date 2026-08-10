@@ -1,6 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { supabaseAdmin, STORAGE_URL, VehicleDB, GaleriaDB } from "../lib/supabase";
 
+
+const SB_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
+const SB_SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
+const sbFetch = async (path: string, opts: RequestInit = {}) => {
+  const r = await fetch(`${SB_URL}${path}`, {
+    ...opts,
+    headers: {
+      'apikey': SB_SK,
+      'Authorization': `Bearer ${SB_SK}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(opts.headers || {}),
+    }
+  });
+  return r;
+};
+
 const ADMIN_SESSION_KEY = "thayssa_admin";
 
 function showToast(msg: string, tipo: "success" | "error" | "info" = "success") {
@@ -58,23 +75,22 @@ export default function AdminPanel() {
 
   const fetchData = async () => {
     if (aba === "estoque") {
-      const { data } = await supabaseAdmin.from("estoque").select("*").order("ordem");
-      if (data) setVeiculos(data);
+      const r = await sbFetch('/rest/v1/estoque?select=*&order=ordem', { method: 'GET' });
+      const data = await r.json();
+      if (Array.isArray(data)) setVeiculos(data);
     } else {
-      const { data } = await supabaseAdmin.from("galeria").select("*").order("ordem");
-      if (data) setGaleria(data);
+      const r = await sbFetch('/rest/v1/galeria?select=*&order=ordem', { method: 'GET' });
+      const data = await r.json();
+      if (Array.isArray(data)) setGaleria(data);
     }
   };
 
   const handleLogin = async () => {
     if (!email || !senha) return;
-    const { data, error } = await supabaseAdmin
-      .from("admins")
-      .select("id, nome")
-      .eq("email", email)
-      .eq("senha_hash", senha)
-      .eq("ativo", true)
-      .single();
+    const loginR = await sbFetch(`/rest/v1/admins?email=eq.${encodeURIComponent(email)}&senha_hash=eq.${encodeURIComponent(senha)}&ativo=eq.true&select=id,nome&limit=1`, { method: 'GET' });
+    const loginData = await loginR.json();
+    const data = Array.isArray(loginData) && loginData.length > 0 ? loginData[0] : null;
+    const error = !data;
 
     if (error || !data) {
       const loginCard = document.getElementById("login-card");
@@ -94,7 +110,7 @@ export default function AdminPanel() {
     showToast(`Bem-vindo, ${data.nome}!`);
 
     // Atualizar último acesso
-    await supabaseAdmin.from("admins").update({ ultimo_acesso: new Date().toISOString() }).eq("id", data.id);
+    await sbFetch(`/rest/v1/admins?id=eq.${data.id}`, { method: "PATCH", body: JSON.stringify({ ultimo_acesso: new Date().toISOString() }) });
   };
 
   const handleLogout = () => {
@@ -133,12 +149,25 @@ export default function AdminPanel() {
   };
 
   const salvarVeiculo = async (v: VehicleDB) => {
-    const { error } = await supabaseAdmin.from("estoque").update({
-      nome: v.nome, tipo: v.tipo, marca: v.marca, modelo: v.modelo,
-      ano: v.ano, km: v.km, preco_exibicao: v.preco_exibicao,
-      whatsapp_msg: v.whatsapp_msg, destaque: v.destaque, foto_url: v.foto_url
-    }).eq("id", v.id);
-    if (error) { showToast("Erro ao salvar: " + error.message, "error"); return; }
+    const SUPABASE_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
+    const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/estoque?id=eq.${v.id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SK,
+        'Authorization': `Bearer ${SK}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        nome: v.nome, tipo: v.tipo, marca: v.marca, modelo: v.modelo,
+        ano: v.ano, km: v.km, preco_exibicao: v.preco_exibicao,
+        whatsapp_msg: v.whatsapp_msg, destaque: v.destaque, foto_url: v.foto_url
+      })
+    });
+
+    if (!r.ok) { showToast("Erro ao salvar: " + r.status, "error"); return; }
     showToast("✓ Veículo atualizado!");
     setEditando(null);
     fetchData();
@@ -154,18 +183,18 @@ export default function AdminPanel() {
     const url = await uploadFoto(file, "fotos-galeria");
     if (!url) return;
     if (galeriaId) {
-      await supabaseAdmin.from("galeria").update({ foto_url: url }).eq("id", galeriaId);
+      await sbFetch(`/rest/v1/galeria?id=eq.${galeriaId}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ foto_url: url }) });
       showToast("✓ Foto atualizada!");
     } else {
       const maxOrdem = galeria.length > 0 ? Math.max(...galeria.map(g => g.ordem)) + 1 : 1;
-      await supabaseAdmin.from("galeria").insert({ foto_url: url, ordem: maxOrdem, ativo: true });
+      await sbFetch("/rest/v1/galeria", { method: "POST", body: JSON.stringify({ foto_url: url, ordem: maxOrdem, ativo: true }) });
       showToast("✓ Foto adicionada!");
     }
     fetchData();
   };
 
   const removerFotoGaleria = async (id: string) => {
-    await supabaseAdmin.from("galeria").update({ ativo: false }).eq("id", id);
+    await sbFetch(`/rest/v1/galeria?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ ativo: false }) });
     showToast("Foto removida", "info");
     fetchData();
   };
