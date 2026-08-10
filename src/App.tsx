@@ -28,10 +28,10 @@ export default function App() {
       <Navbar />
       <ServicesBar />
       <CountdownTimer />
+      <BrandsMarquee />
 
       <main>
         <Hero />
-        <BrandsMarquee />
         <Differentials />
         <Stock />
         <HowItWorks />
