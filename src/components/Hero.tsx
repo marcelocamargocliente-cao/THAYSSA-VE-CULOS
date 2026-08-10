@@ -202,7 +202,7 @@ export default function Hero() {
           lineHeight: 1,
           position: "absolute",
           left: "50%",
-          bottom: "-5%",
+          bottom: "5%",
           transform: "translateX(-50%)",
         }}>
           BCO&CIA
