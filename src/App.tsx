@@ -5,7 +5,6 @@
 
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import ServicesBar from "./components/ServicesBar";
 import CountdownTimer from "./components/CountdownTimer";
 import Differentials from "./components/Differentials";
 import Stock from "./components/Stock";
@@ -25,7 +24,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F4F0] font-['DM_Sans'] selection:bg-[#C41E1E] selection:text-white">
       <Navbar />
-      <ServicesBar />
       <CountdownTimer />
 
       <main>
