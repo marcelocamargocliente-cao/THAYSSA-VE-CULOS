@@ -197,35 +197,6 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* Nome da agência em destaque com efeito de movimento */}
-          <div style={{
-            ...tr(1),
-            overflow: 'hidden',
-            marginBottom: '4px',
-          }}>
-            <div style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 900,
-              fontSize: 'clamp(1.2rem, 3vw, 2.2rem)',
-              letterSpacing: '0.35em',
-              color: 'transparent',
-              WebkitTextStroke: '1px rgba(196,30,30,0.5)',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-              animation: 'slideText 8s linear infinite',
-              display: 'inline-block',
-            }}>
-              BCO&CIA · THAYSSA VEÍCULOS · BCO&CIA · THAYSSA VEÍCULOS ·&nbsp;
-            </div>
-          </div>
-
-          <style>{`
-            @keyframes slideText {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-          `}</style>
-
           <div style={tr(2,"0.05s")} className="mb-1">
             <h1 className="font-['DM_Sans'] font-black tracking-tighter leading-[0.9]"
               style={{ fontSize:"clamp(2rem,5.5vw,4.8rem)" }}>
