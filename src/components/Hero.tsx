@@ -168,8 +168,8 @@ export default function Hero() {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#0A0A0A]"
-      style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)", display:"flex", alignItems:"center" }}
+      className="relative overflow-hidden bg-[#0A0A0A] flex flex-col"
+      style={{ minHeight:"calc(100dvh - 109px)", maxHeight:"calc(100dvh - 109px)" }}
     >
       {/* Linhas diagonais fundo */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{
@@ -202,15 +202,15 @@ export default function Hero() {
           lineHeight: 1,
           position: "absolute",
           left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
+          bottom: "-5%",
+          transform: "translateX(-50%)",
         }}>
           BCO&CIA
         </span>
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16
-        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-center"
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 pt-6
+        grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 lg:items-start"
       >
 
         {/* ESQUERDA */}
