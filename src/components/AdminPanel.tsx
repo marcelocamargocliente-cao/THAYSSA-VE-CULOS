@@ -109,10 +109,27 @@ export default function AdminPanel() {
     setUploading(true);
     const ext = file.name.split(".").pop();
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabaseAdmin.storage.from(bucket).upload(filename, file, { upsert: true });
+    const SUPABASE_URL = 'https://kvywklyujlnkotnckivd.supabase.co';
+    const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2eXdrbHl1amxua290bmNraXZkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjI4NzMwNSwiZXhwIjoyMTAxODYzMzA1fQ.r6xOZosUxLhv53O0lzHGbJ_8LAWfJ3W1GR1Kboc6fNI';
+
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${filename}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SK,
+        'Authorization': `Bearer ${SK}`,
+        'Content-Type': file.type || 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: file
+    });
+
     setUploading(false);
-    if (error) { showToast("Erro no upload: " + error.message, "error"); return null; }
-    return `${STORAGE_URL}/${bucket}/${filename}`;
+    if (!r.ok) {
+      const txt = await r.text();
+      showToast(`Erro no upload: ${r.status} ${txt.slice(0,60)}`, "error");
+      return null;
+    }
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filename}`;
   };
 
   const salvarVeiculo = async (v: VehicleDB) => {
